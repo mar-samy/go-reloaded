@@ -1,36 +1,82 @@
-// main.go
 package main
 
 import (
-	"fmt"
+	f "fmt"
 	"os"
+	"strconv"
+	s "strings"
 )
 
 func main() {
-	// 1. Check that exactly 2 arguments were provided (input and output file)
+
 	if len(os.Args) != 3 {
-		fmt.Println("Error: Incorrect number of arguments")
+		f.Println("Error: Incorrect number of arguments")
 		return
 	}
 	inputFile := os.Args[1]
 	input, err := os.ReadFile(inputFile)
 	if err != nil {
-		fmt.Println("Error reading this file")
+		f.Println("Error reading this file", err)
 		return
 	}
+	content := string(input)
 
-
-
-	 
-	outputFile := os.Args[2]
-	content := input
-	er := os.WriteFile(outputFile, content, 0644)
-	if er != nil {
-		fmt.Println("Error to write the file")
+	content = hexToDecimal(content)
+	content = binToDecimal(conetnt)
+	/*n, err := strconv.ParseInt("GG", 16, 64)
+	fmt.Println(n)
+	fmt.Println(err)
+	if err != nil {
+		fmt.Println("Parsing failed")
+		return
 	}
-	// 2. Read the input file into a string
+	*/
+	outputFile := os.Args[2]
 
-	// 3. (Transformations will go here in later milestones)
+	err = os.WriteFile(outputFile, input, 0644)
+	if err != nil {
+		f.Println("Error to write the file", err)
+	}
 
-	// 4. Write the result string to the output file
+}
+func hexToDecimal(content string) string {
+	// Parse s as a base-16 integer
+	words := s.Fields(content)
+
+	for i := 1; i < len(words); i++ {
+		if words[i] == "(hex)" {
+
+			decimalNumber, err := strconv.ParseInt(words[i-1], 16, 64)
+			if err != nil {
+				f.Println("Parsing failed: Invalid hexadecimal number")
+				return content
+			} else {
+				words[i-1] = strconv.Itoa(int(decimalNumber))
+			}
+			words[i] = ""
+		}
+	}
+	return s.Join(words, " ")
+}
+
+func binToDecimal(content string) string {
+	// Parse s as a base-2 integer
+	words := s.Fields(content)
+
+	for i := 1; i < len(words); i++ {
+		if words[i] == "(bin)" {
+			decimalNumber, err := strconv.ParseInt(words[i-1], 2, 64)
+			if err != nil {
+				f.Println("Parsing failed: Invalid hexadecimal number")
+				return content
+			} else {
+				words[i-1] = strconv.Itoa(int(decimalNumber))
+			}
+			words[i] = ""
+		}
+		return s.Join(words, " ")
+	}
+
+	// If parsing fails, return s unchanged
+	// Convert the result back to a decimal string and return it
 }
