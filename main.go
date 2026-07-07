@@ -31,6 +31,7 @@ func main() {
 	content = lowerModNum(content)
 	content = capModNum(content)
 	content = fixPunctuation(content)
+	content = fixArticles(content)
 	outputFile := os.Args[2]
 	err = os.WriteFile(outputFile, []byte(content), 0644)
 	if err != nil {
