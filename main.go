@@ -22,6 +22,15 @@ func main() {
 		return
 	}
 	content := string(input)
+	content = processText(content)
+
+	outputFile := os.Args[2]
+	err = os.WriteFile(outputFile, []byte(content), 0644)
+	if err != nil {
+		f.Println("Error to write the file", err)
+	}
+}
+func processText(content string) string {
 	content = hexToDecimal(content)
 	content = binToDecimal(content)
 	content = upperModifier(content)
@@ -32,11 +41,7 @@ func main() {
 	content = capModNum(content)
 	content = fixPunctuation(content)
 	content = fixArticles(content)
-	outputFile := os.Args[2]
-	err = os.WriteFile(outputFile, []byte(content), 0644)
-	if err != nil {
-		f.Println("Error to write the file", err)
-	}
+	return content
 }
 
 func hexToDecimal(content string) string {
