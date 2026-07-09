@@ -193,9 +193,8 @@ func capModNum(words []string) []string {
 }
 
 func fixPunctuation(words []string) []string {
-	result := []string{}
-
-	for _, word := range words {
+	puncVar := ". , ? ! : ; ... !! !? ?!"
+	for _, chan  := range puncVar {
 		// If word is a punctuation token (. , ! ? : ; ... !! !?):
 		//   Attach it to the last element of result (no space between)
 		// Otherwise:
