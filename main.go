@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	f "fmt" //will be using f as as shortcut instead writing the whole fmt term everytime i need it
 	"os"
 	"strconv"
@@ -25,9 +24,10 @@ func main() {
 	content = processText(content)
 
 	outputFile := os.Args[2]
-	err = os.WriteFile(outputFile, []byte(content), 0644)
+	err = os.WriteFile(outputFile, []byte(content), 0622)
 	if err != nil {
 		f.Println("Error to write the file", err)
+		return
 	}
 }
 func processText(content string) string {
@@ -51,7 +51,7 @@ func hexToDecimal(content string) string {
 			decimalNumber, err := strconv.ParseInt(words[i-1], 16, 64)
 			if err != nil {
 				f.Println("Parsing failed: Invalid hexadecimal number")
-				return content
+				continue
 			} else {
 				words[i-1] = strconv.FormatInt(decimalNumber, 10)
 			}
@@ -68,7 +68,7 @@ func binToDecimal(content string) string {
 			decimalNumber, err := strconv.ParseInt(words[i-1], 2, 64)
 			if err != nil {
 				f.Println("Parsing failed: Invalid bindecimal number")
-				return content
+				continue
 			} else {
 				words[i-1] = strconv.Itoa(int(decimalNumber))
 			}
@@ -108,20 +108,22 @@ func capitalizeModifier(content string) string {
 	}
 	return s.Join(words, " ")
 }
-func upperModNum(content string) string {
+func upperModNum(content string) string { //(up, 6
 	words := s.Fields(content)
 	for i := 0; i < len(words); i++ {
 		if words[i] == "(up," && i+1 < len(words) {
 			words[i+1] = s.Trim(words[i+1], ")")
 			Num, err := strconv.Atoi(words[i+1])
 			if err != nil {
-				fmt.Println("Error: Invalid Number Of Words To Be Uppered")
-				return content
+				f.Println("Error: Invalid Number Of Words To Be Uppered")
+				continue
 			}
 			if Num > i {
 				Num = i
+				f.Println("Number of words to be uppered is greater than the available words")
 				for j := 0; j < Num; j++ {
 					words[(i-1)-j] = s.ToUpper(words[(i-1)-j])
+
 				}
 				words = append(words[:i], words[i+2:]...)
 			} else {
@@ -141,11 +143,12 @@ func lowerModNum(content string) string {
 			words[i+1] = s.Trim(words[i+1], ")")
 			Num, err := strconv.Atoi(words[i+1])
 			if err != nil {
-				fmt.Println("Error: Number Of Words To Be Lowered")
+				f.Println("Error: Number Of Words To Be Lowered")
 				return content
 			}
 			if Num > i {
 				Num = i
+				f.Println("Number of words to be lowered is greater than the available words")
 				for j := 0; j < Num; j++ {
 					words[(i-1)-j] = s.ToLower(words[(i-1)-j])
 				}
@@ -167,11 +170,12 @@ func capModNum(content string) string {
 			words[i+1] = s.Trim(words[i+1], ")")
 			Num, err := strconv.Atoi(words[i+1])
 			if err != nil {
-				fmt.Println("Error: Invalid Number of Words to Be Capitalized")
+				f.Println("Error: Invalid Number of Words to Be Capitalized")
 				return content
 			}
 			if Num > i {
 				Num = i
+				f.Println("Number of words to be capitalized is greater than the available words")
 				for j := 0; j < Num; j++ {
 					word := words[i-1-j]
 					words[(i-1)-j] = (s.ToUpper(word[0:1]) + s.ToLower(word[1:]))
@@ -208,8 +212,10 @@ func fixPunctuation(content string) string {
 	content = s.ReplaceAll(content, ". '", ".'")
 	content = s.ReplaceAll(content, "' ", "'")
 	content = s.ReplaceAll(content, " '", "'")
-	words := s.Fields(content)
-	return s.Join(words, " ")
+	//As Elton John said:'I am the most well-known homosexual in the world'
+	/*words := s.Fields(content)
+	return s.Join(words, " ")*/
+	return content
 
 }
 func fixArticles(content string) string {
@@ -229,7 +235,6 @@ func fixArticles(content string) string {
 					words[i] = "an"
 				}
 			default:
-				return words[i]
 			}
 		}
 	}
