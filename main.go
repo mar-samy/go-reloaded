@@ -23,7 +23,7 @@ func main() {
 	content = processText(content)
 
 	outputFile := os.Args[2]
-	err = os.WriteFile(outputFile, []byte(content), 0o622)
+	err = os.WriteFile(outputFile, []byte(content), 0o622) // rwx
 	if err != nil {
 		f.Println("Error to write the file", err)
 		return
@@ -41,6 +41,7 @@ func processText(content string) string {
 	words = lowerModNum(words)
 	words = capModNum(words)
 	words = fixPunctuation(words)
+	words = fixQuotes(words)
 	words = fixArticles(words)
 	content = s.Join(words, " ")
 	return content
@@ -56,7 +57,7 @@ func hexToDecimal(words []string) []string {
 			} else {
 				words[i-1] = strconv.FormatInt(decimalNumber, 10)
 			}
-			words[i] = ""
+			words = append(words[:i], words[i+1:]...)
 		}
 	}
 	return words
@@ -67,12 +68,12 @@ func binToDecimal(words []string) []string {
 		if words[i] == "(bin)" {
 			decimalNumber, err := strconv.ParseInt(words[i-1], 2, 64)
 			if err != nil {
-				f.Println("Parsing failed: Invalid bindecimal number")
+				f.Println("Parsing failed: Invalid binary number")
 				continue
 			} else {
 				words[i-1] = strconv.Itoa(int(decimalNumber))
 			}
-			words[i] = ""
+			words = append(words[:i], words[i+1:]...)
 		}
 	}
 	return words
@@ -193,52 +194,44 @@ func capModNum(words []string) []string {
 }
 
 func fixPunctuation(words []string) []string {
-	puncVar := ". , ? ! : ; ... !! !? ?!"
-	for _, chan  := range puncVar {
-		// If word is a punctuation token (. , ! ? : ; ... !! !?):
-		//   Attach it to the last element of result (no space between)
-		// Otherwise:
-		//   Append it normally
+	puncMarks := []string{".", ",", "?", "!", ":", ";", "...", "!!", "!?", "?!"}
+	for i := 0; i < len(words); i++ {
+		for _, mark := range puncMarks {
+			//f.Println(i, len(words), words)
+			if words[i] == mark {
+				words[i-1] = words[i-1] + words[i]
+				words = append(words[:i], words[i+1:]...)
+				break
+			} else if s.HasPrefix(words[i], mark) == true {
+				words[i] = s.TrimPrefix(words[i], mark)
+				words[i-1] = words[i-1] + mark
+				break
+			}
+		}
 	}
-
-	return result
+	return words
 }
 
 func fixQuotes(words []string) []string {
-	// Iterate through words
-	// Track whether you are currently inside an open quote or not
-	// When you find a standalone ':
-	//   If no quote is open: mark the NEXT word as starting with '
-	//   If a quote is open: attach ' to the END of the previous word, close the quote
-	// Return the cleaned result
-}
+	// Iterate through words    hi my name is samy'
 
-/*func fixPunctuation(content string) string {
+	result := []string{}
+	insideQuotes := false
+	singleQuote := "'"
+	for i := 0; i < len(words); i++ {
+		if insideQuotes == true && words[i] == singleQuote {
+			insideQuotes = false
+			result[len(result)-1] = words[i-1] + words[i]
+		} else if words[i] == singleQuote {
+			insideQuotes = true
+			words[i+1] = words[i] + words[i+1]
 
-content = s.ReplaceAll(content, " .", ".")
-content = s.ReplaceAll(content, " ,", ",")
-content = s.ReplaceAll(content, " !", "!")
-content = s.ReplaceAll(content, " ?", "?")
-content = s.ReplaceAll(content, " ;", ";")
-content = s.ReplaceAll(content, " : ", ": ")
-content = s.ReplaceAll(content, ",", ", ")
-content = s.ReplaceAll(content, ".", ". ")
-content = s.ReplaceAll(content, "!", "! ")
-content = s.ReplaceAll(content, "?", "? ")
-content = s.ReplaceAll(content, ";", "; ")
-content = s.ReplaceAll(content, ". . .", "...")
-content = s.ReplaceAll(content, "! !", "!!")
-content = s.ReplaceAll(content, "! ?", "!?")
-content = s.ReplaceAll(content, "? !", "?!")
-content = s.ReplaceAll(content, ". '", ".'")
-content = s.ReplaceAll(content, "' ", "'")
-content = s.ReplaceAll(content, " '", "'")
-//As Elton John said:'I am the most well-known homosexual in the world'
-/*words := s.Fields(content)
-return words
-return content
+		} else {
+			result = append(result, words[i])
+		}
+	}
+	return result
 }
-*/
 
 func fixArticles(words []string) []string {
 	for i := 0; i < len(words)-1; i++ {
