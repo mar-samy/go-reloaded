@@ -194,13 +194,14 @@ func capModNum(words []string) []string {
 }
 
 func fixPunctuation(words []string) []string {
-	puncMarks := []string{".", ",", "?", "!", ":", ";", "...", "!!", "!?", "?!"}
+	puncMarks := []string{"...", "!!", "!?", "?!", ".", ",", "?", "!", ":", ";"}
 	for i := 0; i < len(words); i++ {
 		for _, mark := range puncMarks {
 			//f.Println(i, len(words), words)
 			if words[i] == mark {
 				words[i-1] = words[i-1] + words[i]
 				words = append(words[:i], words[i+1:]...)
+				i--
 				break
 			} else if s.HasPrefix(words[i], mark) == true {
 				words[i] = s.TrimPrefix(words[i], mark)
