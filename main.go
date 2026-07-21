@@ -17,16 +17,16 @@ func main() {
 	if err != nil {
 
 		f.Println("Error reading this file", err)
-		return
+		os.Exit(1)
 	}
 	content := string(input)
 	content = processText(content)
 
 	outputFile := os.Args[2]
-	err = os.WriteFile(outputFile, []byte(content), 0o622) // rwx
+	err = os.WriteFile(outputFile, []byte(content), 0622) //
 	if err != nil {
 		f.Println("Error to write the file", err)
-		return
+		os.Exit(1)
 	}
 }
 
@@ -52,7 +52,7 @@ func hexToDecimal(words []string) []string {
 		if words[i] == "(hex)" {
 			decimalNumber, err := strconv.ParseInt(words[i-1], 16, 64)
 			if err != nil {
-				f.Println("Parsing failed: Invalid hexadecimal number")
+				f.Println("Parsing failed: Invalid hexadecimal number", os.Stderr)
 				continue
 			} else {
 				words[i-1] = strconv.FormatInt(decimalNumber, 10)
@@ -68,7 +68,7 @@ func binToDecimal(words []string) []string {
 		if words[i] == "(bin)" {
 			decimalNumber, err := strconv.ParseInt(words[i-1], 2, 64)
 			if err != nil {
-				f.Println("Parsing failed: Invalid binary number")
+				f.Println("Parsing failed: Invalid binary number", os.Stderr)
 				continue
 			} else {
 				words[i-1] = strconv.Itoa(int(decimalNumber))
@@ -103,7 +103,7 @@ func capitalizeModifier(words []string) []string {
 	for i := 1; i < len(words); i++ {
 		if words[i] == "(cap)" {
 			word := words[i-1]
-			words[i-1] = (s.ToUpper(word[0:1]) + s.ToLower(word[1:]))
+			words[i-1] = (s.ToUpper(word[:1]) + s.ToLower(word[1:])) // FaHmi -> Fahmi / FAHMI/
 			words = append(words[:i], words[i+1:]...)
 		}
 	}
@@ -116,12 +116,12 @@ func upperModNum(words []string) []string { //(up, 6
 			words[i+1] = s.Trim(words[i+1], ")")
 			Num, err := strconv.Atoi(words[i+1])
 			if err != nil {
-				f.Println("Error: Invalid Number Of Words To Be Uppered")
+				f.Println("Error: Invalid Number Of Words To Be Uppered", os.Stderr)
 				continue
 			}
 			if Num > i {
 				Num = i
-				f.Println("Number of words to be uppered is greater than the available words")
+				f.Println("Number of words to be uppered is greater than the available words", os.Stderr)
 				for j := 0; j < Num; j++ {
 					words[(i-1)-j] = s.ToUpper(words[(i-1)-j])
 				}
@@ -143,12 +143,12 @@ func lowerModNum(words []string) []string {
 			words[i+1] = s.Trim(words[i+1], ")")
 			Num, err := strconv.Atoi(words[i+1])
 			if err != nil {
-				f.Println("Error: Number Of Words To Be Lowered")
+				f.Println("Error: Number Of Words To Be Lowered", os.Stderr)
 				continue
 			}
 			if Num > i {
 				Num = i
-				f.Println("Number of words to be lowered is greater than the available words")
+				f.Println("Number of words to be lowered is greater than the available words", os.Stderr)
 				for j := 0; j < Num; j++ {
 					words[(i-1)-j] = s.ToLower(words[(i-1)-j])
 				}
@@ -170,12 +170,12 @@ func capModNum(words []string) []string {
 			words[i+1] = s.Trim(words[i+1], ")")
 			Num, err := strconv.Atoi(words[i+1])
 			if err != nil {
-				f.Println("Error: Invalid Number of Words to Be Capitalized")
+				f.Println("Error: Invalid Number of Words to Be Capitalized", os.Stderr)
 				continue
 			}
 			if Num > i {
 				Num = i
-				f.Println("Number of words to be capitalized is greater than the available words")
+				f.Println("Number of words to be capitalized is greater than the available words", os.Stderr)
 				for j := 0; j < Num; j++ {
 					word := words[i-1-j]
 					words[(i-1)-j] = (s.ToUpper(word[0:1]) + s.ToLower(word[1:]))
@@ -200,10 +200,10 @@ func fixPunctuation(words []string) []string {
 			//f.Println(i, len(words), words)
 			if words[i] == mark {
 				words[i-1] = words[i-1] + words[i]
-				words = append(words[:i], words[i+1:]...)
+				words = append(words[:i], words[i+1:]...) // i want , banana -> i want, banana
 				i--
 				break
-			} else if s.HasPrefix(words[i], mark) == true {
+			} else if s.HasPrefix(words[i], mark) == true { // I want, banana
 				words[i] = s.TrimPrefix(words[i], mark)
 				words[i-1] = words[i-1] + mark
 				break
@@ -222,8 +222,8 @@ func fixQuotes(words []string) []string {
 	for i := 0; i < len(words); i++ {
 		if insideQuotes == true && words[i] == singleQuote {
 			insideQuotes = false
-			result[len(result)-1] = words[i-1] + words[i]
-		} else if words[i] == singleQuote {
+			result[len(result)-1] = words[i-1] + words[i] // 'I
+		} else if words[i] == singleQuote { // 'I want tea'
 			insideQuotes = true
 			words[i+1] = words[i] + words[i+1]
 
