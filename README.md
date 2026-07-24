@@ -128,12 +128,14 @@ Future Improvements
 
 Possible future enhancements include:
 
-Unit testing
-Performance optimizations
-Cleaner parser architecture
-Better error reporting
-Additional text transformations
-Refactoring repeated modifier logic
+ - Unit testing
+ - Performance optimizations
+ - Cleaner parser architecture
+ - Better error reporting
+ - Additional text transformations
+ - Refactoring repeated modifier logic
+
+
 A Personal Note
 
 If someone reading this is also starting their programming journey, I'd like to say one thing:
